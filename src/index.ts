@@ -1,20 +1,23 @@
 import { Prisma } from '@prisma/client/extension'
+import { IFindManyProExtArgs } from './types/find-many-pro-ext-args.type';
+import { findManyUtil } from './utils/find-many.util';
 
 type Args = {}
 
-export const existsFn = (_extensionArgs: Args) =>
+export const findManyProExtension = (_extensionArgs: Args) =>
   Prisma.defineExtension({
-    name: "prisma-extension-find-or-create",
+    name: "prisma-extension-filter-sort",
     model: {
       $allModels: {
-        async exists<T, A>(
-          this: T,
-          args: Prisma.Exact<A, Prisma.Args<T, 'findFirst'>>
-        ): Promise<boolean> {
-
-          const ctx = Prisma.getExtensionContext(this)
-          const result = await (ctx as any).findFirst(args)
-          return result !== null
+        async findManyPro<T, K>(args: IFindManyProExtArgs<T, K>) {
+          try {
+            return await findManyUtil<T, K>({
+              ...args,
+              model: Prisma.getExtensionContext(this),
+            });
+          } catch (error) {
+            throw error;
+          }
         },
       },
     },
