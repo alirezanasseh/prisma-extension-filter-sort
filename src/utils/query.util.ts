@@ -1,6 +1,7 @@
 import { helpers } from './helpers';
 import { FieldType } from '../types/field.type';
 import { Modifiers } from '../types/modifier.type';
+import { ISearchObject } from '../types/search-object.type';
 
 const FieldTypeModifiers: Record<FieldType, Modifiers[]> = {
   [FieldType.STRING]: [
@@ -27,11 +28,11 @@ function checkModifier(modifier: string, type: FieldType): boolean {
 }
 
 function parseQueryObject(params: {
-  filterableFields: Record<string, FieldType>;
-  obj: object;
+  filterableFields?: Record<string, FieldType>;
+  obj: ISearchObject;
 }) {
   const { obj, filterableFields } = params;
-  const result = {};
+  const result: any = {};
   for (const key of Object.keys(obj)) {
     const keyParts = key.split('.');
     if (keyParts.length === 1) {
@@ -86,8 +87,8 @@ function parseQueryObject(params: {
 }
 
 export function queryUtil(params: {
-  search: string;
-  filterableFields: Record<string, FieldType>;
+  search?: string;
+  filterableFields?: Record<string, FieldType>;
   accessControlFields?: Record<string, any>;
 }) {
   const { search, filterableFields, accessControlFields } = params;
