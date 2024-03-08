@@ -33,53 +33,73 @@ function parseQueryObject(params: {
 }) {
   const { obj, filterableFields } = params;
   const result: any = {};
+  // Sample obj: { id: '1', 'name.contains': 'John', 'createdAt.GTE': '2024-01-01', OR: [{ 'age.lt': 18 }, { 'age.gt': 80 }] }
   for (const key of Object.keys(obj)) {
+    // Sample key: 'id', 'name.contains', 'createdAt.GTE', 'OR'
+    let value = obj[key];
+    // Sample value: '1', 'John', '2024-01-01', [{ 'age.lt': 18 }, { 'age.gt': 80 }]
     const keyParts = key.split('.');
+    // Sample keyParts: ['id'], ['name', 'contains'], ['createdAt', 'GTE'], ['OR']
     if (keyParts.length === 1) {
+      // Sample key: 'id', 'OR'
       if (key === 'OR') {
-        if (!Array.isArray(obj[key])) {
+        if (!Array.isArray(value)) {
           throw new Error('OR condition should be an array');
         }
-        result['OR'] = obj[key].map((innerObj: object) =>
+        result['OR'] = value.map((innerObj) =>
+          // Sample innerObj: { 'age.lt': 18 }, { 'age.gt': 80 }
           parseQueryObject({ obj: innerObj, filterableFields }),
         );
       } else {
-        if (!Object.keys(filterableFields).includes(key)) {
-          throw new Error(
-            `filterable fields for this model are: ${Object.keys(filterableFields)}`,
-          );
-        }
-        let value = obj[key];
-        if (filterableFields[key] === FieldType.DATE) {
-          value = new Date(value);
-        }
-        if (filterableFields[key] === FieldType.STRING) {
-          result[key] = { equals: value, mode: 'insensitive' };
+        if (filterableFields) {
+          // Sample filterableFields: { id: FieldType.ID, name: FieldType.STRING, createdAt: FieldType.DATE, age: FieldType.NUMBER }
+          if (!Object.keys(filterableFields).includes(key)) {
+            throw new Error(
+              `filterable fields for this model are: ${Object.keys(filterableFields)}`,
+            );
+          }
+          if (filterableFields[key] === FieldType.DATE && typeof value === 'string') {
+            // Sample value: '2024-01-01'
+            value = new Date(value);
+          }
+          if (filterableFields[key] === FieldType.STRING) {
+            // Sample value: 'John'
+            result[key] = {equals: value, mode: 'insensitive'};
+          } else {
+            // Sample value: '1'
+            result[key] = value;
+          }
         } else {
-          result[key] = { equals: value };
+          result[key] = value;
         }
       }
     } else {
+      // Sample key: 'name.contains', 'createdAt.GTE'
       const field = keyParts[0];
+      // Sample field: 'name', 'createdAt'
       const modifier = keyParts[1];
-      if (!Object.keys(filterableFields).includes(field)) {
-        throw new Error(
-          `filterable fields for this model are: ${Object.keys(filterableFields).join(', ')}`,
-        );
-      }
-      if (!checkModifier(modifier, filterableFields[field])) {
-        throw new Error(
-          `Invalid modifier '${modifier}' for field '${field}' of type '${filterableFields[field]}', valid modifiers are: ${FieldTypeModifiers[filterableFields[field]].join(', ')}`,
-        );
-      }
-      let value = obj[key];
-      if (filterableFields[field] === FieldType.DATE) {
-        value = new Date(value);
-      }
-      if (filterableFields[field] === FieldType.STRING) {
-        result[field] = { [modifier]: value, mode: 'insensitive' };
+      // Sample modifier: 'contains', 'GTE'
+      if (filterableFields) {
+        if (!Object.keys(filterableFields).includes(field)) {
+          throw new Error(
+            `filterable fields for this model are: ${Object.keys(filterableFields).join(', ')}`,
+          );
+        }
+        if (!checkModifier(modifier, filterableFields[field])) {
+          throw new Error(
+            `Invalid modifier '${modifier}' for field '${field}' of type '${filterableFields[field]}', valid modifiers are: ${FieldTypeModifiers[filterableFields[field]].join(', ')}`,
+          );
+        }
+        if (filterableFields[field] === FieldType.DATE && typeof value === 'string') {
+          value = new Date(value);
+        }
+        if (filterableFields[field] === FieldType.STRING) {
+          result[field] = {[modifier]: value, mode: 'insensitive'};
+        } else {
+          result[field] = {[modifier]: value};
+        }
       } else {
-        result[field] = { [modifier]: value };
+        result[field] = {[modifier]: value};
       }
     }
   }
