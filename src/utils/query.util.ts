@@ -5,22 +5,22 @@ import { ISearchObject } from '../types/search-object.type';
 import { IFindManyUtilArgs } from '../types/find-many-util-args.type';
 
 const FieldTypeModifiers: Record<FieldType, Modifiers[]> = {
-  [FieldType.STRING]: [
+  string: [
     Modifiers.CONTAINS,
     Modifiers.STARTS_WITH,
     Modifiers.ENDS_WITH,
   ],
-  [FieldType.NUMBER]: [
+  number: [
     Modifiers.GT,
     Modifiers.GTE,
     Modifiers.LT,
     Modifiers.LTE,
   ],
-  [FieldType.DATE]: [Modifiers.GT, Modifiers.GTE, Modifiers.LT, Modifiers.LTE],
-  [FieldType.BOOLEAN]: [],
-  [FieldType.ID]: [],
-  [FieldType.ENUM]: [],
-  [FieldType.ARRAY]: [Modifiers.CONTAINS],
+  date: [Modifiers.GT, Modifiers.GTE, Modifiers.LT, Modifiers.LTE],
+  boolean: [],
+  id: [],
+  enum: [],
+  array: [Modifiers.CONTAINS],
 };
 
 function checkModifier(modifier: string, type: FieldType): boolean {
@@ -60,11 +60,11 @@ function parseQueryObject(params: {
               `filterable fields for this model are: ${Object.keys(filterableFields)}`,
             );
           }
-          if (filterableFields[key] === FieldType.DATE && typeof value === 'string') {
+          if (filterableFields[key] === 'date' && typeof value === 'string') {
             // Sample value: '2024-01-01'
             value = new Date(value);
           }
-          if (filterableFields[key] === FieldType.STRING) {
+          if (filterableFields[key] === 'string') {
             // Sample value: 'John'
             result[key] = {equals: value, mode: 'insensitive'};
           } else {
@@ -92,10 +92,10 @@ function parseQueryObject(params: {
             `Invalid modifier '${modifier}' for field '${field}' of type '${filterableFields[field]}', valid modifiers are: ${FieldTypeModifiers[filterableFields[field]!].join(', ')}`,
           );
         }
-        if (filterableFields[field] === FieldType.DATE && typeof value === 'string') {
+        if (filterableFields[field] === 'date' && typeof value === 'string') {
           value = new Date(value);
         }
-        if (filterableFields[field] === FieldType.STRING) {
+        if (filterableFields[field] === 'string') {
           result[field] = {[modifier]: value, mode: 'insensitive'};
         } else {
           result[field] = {[modifier]: value};
