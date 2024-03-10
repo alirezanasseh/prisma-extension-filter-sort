@@ -3,8 +3,8 @@ export enum IOrder {
   DESC = 'desc',
 }
 
-export interface ISortUtilArgs {
-  sort: string;
-  order: IOrder;
-  sortableFields: string[];
+export interface ISortUtilArgs<T> {
+  sort?: keyof T;
+  order?: IOrder;
+  sortableFields?: (keyof T)[];
 }
