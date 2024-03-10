@@ -6,8 +6,8 @@ export type IFindManyUtilArgs<T> =
   {
     model: any;
     search?: string;
-    filterableFields?: Record<keyof T, FieldType>
-    accessControlFields?: Record<keyof T, any>;
+    filterableFields?: Partial<Record<keyof T, FieldType>>;
+    accessControlFields?: Partial<Record<keyof T, any>>;
     include?: any;
     select?: any;
     where?: any;
