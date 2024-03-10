@@ -3,12 +3,13 @@ import { queryUtil } from './query.util';
 import { sortUtil } from './sort.util';
 import { IFindManyUtilArgs } from '../types/find-many-util-args.type';
 
-export async function findManyUtil<T, K = any>(
-  params: IFindManyUtilArgs<T, K>,
+export async function findManyUtil<T>(
+  params: IFindManyUtilArgs<T>,
 ) {
   const {
     search,
     sort,
+    sortableFields,
     order,
     page,
     perPage,
@@ -25,16 +26,16 @@ export async function findManyUtil<T, K = any>(
       {
         where: {
           ...where,
-          ...queryUtil({
+          ...queryUtil<T>({
             search,
             filterableFields,
             accessControlFields,
           }),
         },
-        orderBy: sortUtil({
+        orderBy: sortUtil<T>({
           sort,
           order,
-          sortableFields: Object.keys(filterableFields),
+          sortableFields,
         }),
         include,
         select,

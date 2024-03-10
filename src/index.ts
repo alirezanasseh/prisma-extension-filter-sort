@@ -10,9 +10,9 @@ export const findManyProExtension = (_extensionArgs: Args) =>
     name: "prisma-extension-filter-sort",
     model: {
       $allModels: {
-        async findManyPro<T, K>(args: IFindManyProExtArgs<T, K>) {
+        async findManyPro<T>(args: Omit<IFindManyUtilArgs<T>, 'model'>) {
           try {
-            return await findManyUtil<T, K>({
+            return await findManyUtil<T>({
               ...args,
               model: Prisma.getExtensionContext(this),
             });
