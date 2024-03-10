@@ -1,10 +1,5 @@
-export enum IOrder {
-  ASC = 'asc',
-  DESC = 'desc',
-}
-
 export interface ISortUtilArgs<T> {
   sort?: keyof T;
-  order?: IOrder;
+  order?: 'asc' | 'desc';
   sortableFields?: (keyof T)[];
 }

@@ -1,4 +1,4 @@
-import { IOrder, ISortUtilArgs } from '../types/sort-util.type';
+import { ISortUtilArgs } from '../types/sort-util.type';
 
 export function sortUtil<T>(params: ISortUtilArgs<T>) {
   const { sort, sortableFields } = params;
@@ -13,7 +13,7 @@ export function sortUtil<T>(params: ISortUtilArgs<T>) {
     );
   }
   if (!order) {
-    order = IOrder.ASC;
+    order = 'asc';
   }
   if (!['asc', 'desc'].includes(order)) {
     throw new Error('Invalid order, must be asc or desc');
