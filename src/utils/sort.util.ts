@@ -1,15 +1,15 @@
 import { IOrder, ISortUtilArgs } from '../types/sort-util.type';
 
-export function sortUtil(params: ISortUtilArgs) {
+export function sortUtil<T>(params: ISortUtilArgs<T>) {
   const { sort, sortableFields } = params;
   let { order } = params;
-  let result: Record<string, any> = { id: 'desc' };
+  let result: Record<string, any> = {};
   if (!sort) {
     return result;
   }
-  if (!sortableFields.includes(sort)) {
+  if (sortableFields && !sortableFields.includes(sort)) {
     throw new Error(
-      `Invalid sort field: ${sort}, must be one of: ${sortableFields.join(', ')}`,
+      `Invalid sort field: ${sort.toString()}, must be one of: ${sortableFields.join(', ')}`,
     );
   }
   if (!order) {
