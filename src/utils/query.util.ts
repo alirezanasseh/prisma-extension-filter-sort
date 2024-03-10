@@ -2,6 +2,7 @@ import { helpers } from './helpers';
 import { FieldType } from '../types/field.type';
 import { Modifiers } from '../types/modifier.type';
 import { ISearchObject } from '../types/search-object.type';
+import { IFindManyUtilArgs } from '../types/find-many-util-args.type';
 
 const FieldTypeModifiers: Record<FieldType, Modifiers[]> = {
   [FieldType.STRING]: [
@@ -28,18 +29,18 @@ function checkModifier(modifier: string, type: FieldType): boolean {
 }
 
 function parseQueryObject(params: {
-  filterableFields?: Record<string, FieldType>;
+  filterableFields?: Partial<{ [key: string]: FieldType }>;
   obj: ISearchObject;
 }) {
   const { obj, filterableFields } = params;
-  const result: any = {};
   // Sample obj: { id: '1', 'name.contains': 'John', 'createdAt.GTE': '2024-01-01', OR: [{ 'age.lt': 18 }, { 'age.gt': 80 }] }
+  const result: any = {};
+  // Sample key: 'id', 'name.contains', 'createdAt.GTE', 'OR'
   for (const key of Object.keys(obj)) {
-    // Sample key: 'id', 'name.contains', 'createdAt.GTE', 'OR'
-    let value = obj[key];
     // Sample value: '1', 'John', '2024-01-01', [{ 'age.lt': 18 }, { 'age.gt': 80 }]
-    const keyParts = key.split('.');
+    let value = obj[key];
     // Sample keyParts: ['id'], ['name', 'contains'], ['createdAt', 'GTE'], ['OR']
+    const keyParts = key.split('.');
     if (keyParts.length === 1) {
       // Sample key: 'id', 'OR'
       if (key === 'OR') {
@@ -51,6 +52,7 @@ function parseQueryObject(params: {
           parseQueryObject({ obj: innerObj, filterableFields }),
         );
       } else {
+        // Sample key: 'id'
         if (filterableFields) {
           // Sample filterableFields: { id: FieldType.ID, name: FieldType.STRING, createdAt: FieldType.DATE, age: FieldType.NUMBER }
           if (!Object.keys(filterableFields).includes(key)) {
@@ -85,9 +87,9 @@ function parseQueryObject(params: {
             `filterable fields for this model are: ${Object.keys(filterableFields).join(', ')}`,
           );
         }
-        if (!checkModifier(modifier, filterableFields[field])) {
+        if (!checkModifier(modifier, filterableFields[field]!)) {
           throw new Error(
-            `Invalid modifier '${modifier}' for field '${field}' of type '${filterableFields[field]}', valid modifiers are: ${FieldTypeModifiers[filterableFields[field]].join(', ')}`,
+            `Invalid modifier '${modifier}' for field '${field}' of type '${filterableFields[field]}', valid modifiers are: ${FieldTypeModifiers[filterableFields[field]!].join(', ')}`,
           );
         }
         if (filterableFields[field] === FieldType.DATE && typeof value === 'string') {
@@ -106,16 +108,12 @@ function parseQueryObject(params: {
   return result;
 }
 
-export function queryUtil(params: {
-  search?: string;
-  filterableFields?: Record<string, FieldType>;
-  accessControlFields?: Record<string, any>;
-}) {
+export function queryUtil<T>(params: Pick<IFindManyUtilArgs<T>, 'search' | 'filterableFields' | 'accessControlFields'>) {
   const { search, filterableFields, accessControlFields } = params;
   if (!search) {
     return accessControlFields || {};
   }
-  let queryObject: any;
+  let queryObject: ISearchObject;
   try {
     queryObject = JSON.parse(search);
   } catch (e) {
