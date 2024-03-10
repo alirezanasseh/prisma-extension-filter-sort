@@ -1,49 +1,98 @@
-# Prisma Client Extension starter repository
+# Prisma filter and sort extension
 
-Use this template to bootstrap creating your Prisma Client extension.
+This extension enables you to get filters and sorts for your Prisma models from the query string.
 
-Client extensions provide a powerful way to add functionality to Prisma Client in a type-safe manner. You can use them to create simple and flexible solutions that are not natively supported by Prisma. 
+## Installation
 
+```bash
+npm install prisma-filter-sort
 
-
-If you would like to learn more, refer to the [Prisma docs](https://www.prisma.io/docs/concepts/components/prisma-client/client-extensions) to learn more information.
-
-## Get started
-
-Click the **Use this template** button and provide details for your Client extension
-
-Install the dependencies:
-
-```
-npm install
+yarn add prisma-filter-sort
 ```
 
-Build the extension:
+## Usage
 
+```typescript
+import { findManyProExtension } from 'prisma-extension-filter-sort';
+import { PrismaClient, Notes } from '@prisma/client'
+
+const prisma = new PrismaClient().$extends(findManyProExtension({}))
+
+const notes = await prisma.notes.findManyPro<Notes>({
+    // Fields comming from the request query string
+    search: '{"title.contains": "work"}',
+    sort: 'createdAt',
+    order: 'desc',
+    page: 1,
+    perPage: 10,
+    // Control fields you add
+    filterableFields: {
+      id: 'id',
+      title: 'string',
+      content: 'string',
+    },
+    sortableFields: ['id', 'createdAt'],
+    accessControlFields: {
+      authorId: user.id,
+    },
+})
 ```
-npm run build
+## Options
+
+- `search` - A JSON stringified object about the filters you want to apply to the query.
+- `sort` - The field you want to sort by.
+- `order` - The order you want to sort by.
+- `page` - The page you want to get.
+- `perPage` - The amount of items you want to get per page.
+- `filterableFields` - An object with the fields you want to be able to filter by and their types.
+- `sortableFields` - An array with the fields you want to be able to sort by.
+- `accessControlFields` - An object you want to add to the query for access control.
+
+## Search format
+
+The search format is a JSON stringified object with the following format:
+
+```json
+{
+  "field": "value",
+  "field2.modifier": "value",
+  "OR": [
+    {
+      "field3": "value"
+    },
+    {
+      "field4.modifier": "value"
+    }
+  ]
+}
+```
+if you don't use the `modifier` the default is `equals`.
+each field type has its own modifiers:
+- `string`:
+  - `contains`
+  - `startsWith`
+  - `endsWith`
+- `number`:
+  - `gt`
+  - `gte`
+  - `lt`
+  - `lte`
+- `date`:
+  - `gt`
+  - `gte`
+  - `lt`
+  - `lte`
+- Other types don't have modifiers (they will use equals logic).
+
+A sample search string would be:
+```
+{ "title.contains": "work", "content.startsWith": "This is", "createdAt.gte": "2021-01-01", "OR": [{ "title.contains": "work" },{ "content.startsWith": "This is" }]}
 ```
 
-Set up the example app:
+## Contributing
 
-```
-cd example
-npm install
-npx prisma db push
-```
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-Test the extension in the example app:
-```
-npm run dev
-```
+## License
 
-### Evolve the extension
-
-The code for the extension is located in the [`index.ts`](./src/index.ts) file. Feel free to update it before publishing your Client extension to [npm](https://npmjs.com/).
-
-## Learn more
-
-- [Docs — Client extensions](https://www.prisma.io/docs/concepts/components/prisma-client/client-extensions)
-- [Docs — Shared extensions](https://www.prisma.io/docs/concepts/components/prisma-client/client-extensions/shared-extensions)
-- [Examples](https://github.com/prisma/prisma-client-extensions/tree/main)
-- [Preview announcement blog post](https://www.prisma.io/blog/client-extensions-preview-8t3w27xkrxxn#introduction)
+MIT
