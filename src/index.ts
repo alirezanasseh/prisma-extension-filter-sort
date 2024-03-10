@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client/extension'
-import { IFindManyProExtArgs } from './types/find-many-pro-ext-args.type';
 import { findManyUtil } from './utils/find-many.util';
 import { FieldType } from './types/field.type';
+import { IFindManyUtilArgs } from './types/find-many-util-args.type';
 
 type Args = {}
 
