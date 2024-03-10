@@ -1,6 +1,6 @@
 {
   "name": "prisma-extension-filter-sort",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "author": "Alireza Nasseh",
   "description": "This is a prisma extension that adds query string support for filtering and sorting.",
   "keywords": [
